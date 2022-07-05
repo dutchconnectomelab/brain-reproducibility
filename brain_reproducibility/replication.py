@@ -210,7 +210,10 @@ def estimate_replication_rate(
     n_pat = (participants["dx"] == disorder).sum()
     n_ctrl = (participants["dx"] == control_dx).sum()
 
-    if (n_pat < sample_size) | (n_ctrl < sample_size):
+    if (n_pat < 2 * sample_size) | (n_ctrl < 2 * sample_size):
+        print(
+            f"Skipping sample size = {sample_size}, not enough subjects to conduct a discovery and replication study."
+        )
         return pd.DataFrame()
 
     if sampling_mode > 0:
@@ -232,6 +235,9 @@ def estimate_replication_rate(
         candidate_splits = [ds for ds in split_names if split_max[ds] >= sample_size]
 
         if len(candidate_splits) < 2:
+            print(
+                f"Skipping sample size = {sample_size}, need at least splits with enough subjects."
+            )
             return pd.DataFrame()
 
     replication_rate = np.zeros((iterations))
