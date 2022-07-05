@@ -33,7 +33,7 @@ These were downloaded separately using `brain_reproducibility/load_engima_effect
 Figure 1b was generated using:
 
 ```
-python3 brain_reproducibllity/replication.py \
+python3 brain_reproduciblity/replication.py \
   --iterations 10000 \
   --datapath /path/to/data/ \  # remove this to use simulated data
   --progress
