@@ -107,13 +107,29 @@ def apply_age_filter(
 
 
 def remove_outliers(participants: pd.DataFrame, ct: np.ndarray, z_thr=3):
-    ct_mean = np.mean(ct, axis=0)
-    z_stat = scipy.stats.zscore(ct_mean, nan_policy="omit", axis=0)
-    selection = np.abs(z_stat) < z_thr
-    n_outliers = len(selection) - np.sum(selection)
-    if n_outliers > 0:
-        print(f"Removing {n_outliers} outliers from data")
-    return participants[selection], ct[:, selection]
+    n_subjects = len(participants)
+
+    def _remove_outliers_from_dataset(df: pd.DataFrame, x: np.ndarray):
+        ct_mean = np.mean(x, axis=0)
+        z_stat = scipy.stats.zscore(ct_mean, nan_policy="omit", axis=0)
+        selection = np.abs(z_stat) < z_thr
+        return df[selection], x[:, selection]
+
+    res = [
+        _remove_outliers_from_dataset(
+            participants[participants["dataset"] == dataset],
+            ct[:, participants["dataset"] == dataset],
+        )
+        for dataset in np.unique(participants["dataset"])
+    ]
+    participants = pd.concat([x[0] for x in res])
+    ct = np.concatenate([x[1] for x in res], axis=-1)
+
+    outliers = n_subjects - len(participants)
+    if outliers > 0:
+        print(f"Removing {outliers} outliers from data")
+
+    return participants, ct
 
 
 def regress_out_confounders(participants: pd.DataFrame, ct: np.ndarray) -> np.ndarray:
